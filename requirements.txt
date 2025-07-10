@@ -1,0 +1,8 @@
+langchain
+langchain-community
+langchain-huggingface
+langchain-chroma
+safetensors
+transformers
+torch
+
