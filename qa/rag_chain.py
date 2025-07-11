@@ -40,7 +40,7 @@ def build_qa_chain():
     vectorstore = Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embedding_function)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
 
-    model_name = "tiiuae/falcon-rw-1b"
+    model_name = "Qwen/Qwen2.5-3B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
