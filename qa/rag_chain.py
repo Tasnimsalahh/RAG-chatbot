@@ -6,17 +6,20 @@ from langchain.prompts import PromptTemplate
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-system_prompt = "You are a helpful assistant that answers questions based on the provided context. " \
+system_prompt = "You are a helpful assistant that answers questions based on the provided context and the language of the query. " \
                 "If the context does not contain the answer, say 'I don't know'. " \
                 "If the context is not relevant, say 'This is not relevant to the question'. " \
                 "Always provide a concise answer with no extra information." \
-                "If the question is not clear, ask for clarification." 
-                                
+                "If the question is not clear, ask for clarification." \
+
 prompt_template = PromptTemplate.from_template(
         """
 {system_prompt}
 
-You must use only the following context to answer the question. keep your answers straight to the point and concise. Don't add any extra information or explanations. "Answer with the same language as the question, if the language is not supported,say 'this language is not supported' and answer in English."
+You must use only the following context to answer the question. keep your answers straight to the point and concise. Don't add any extra information or explanations.\
+    Answer with the same language as the question, if the language is not supported,say 'this language is not supported' and answer in English.\
+    don't use any other language than the one used in the question.\
+    اذا جاء السؤال باللغة العربية, اجب باللغة العربية. اذا لم يكن لديك اجابة باللغة العربية, قل 'هذه اللغة غير مدعومة' و اجب باللغة الانجليزية.
 
 Context:
 {context}

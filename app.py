@@ -60,8 +60,12 @@ def respond(message, history):
         #     return "I don't know"
         # if len(answer.strip()) == 0:
         #     return "I don't know"
+        
+        # Extract the answer from the response
+        if "Answer:" in answer:
+            extracted_answer = answer.split("Answer:")[-1].strip() if "Answer:" in answer else answer
 
-        return answer
+        return extracted_answer
 
     except Exception as e:
         print("Error:", str(e))
