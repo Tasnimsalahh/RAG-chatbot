@@ -53,13 +53,13 @@ def respond(message, history):
         for i, doc in enumerate(response.get("source_documents", [])):
             print(f"\nDocument {i+1}:\n", doc.page_content[:300])
 
-        # Post-processing logic
-        if "not relevant" in answer.lower():
-            return "This is not relevant to the question"
-        if "don't know" in answer.lower():
-            return "I don't know"
-        if len(answer.strip()) == 0:
-            return "I don't know"
+        # # Post-processing logic
+        # if "not relevant" in answer.lower():
+        #     return "This is not relevant to the question"
+        # if "don't know" in answer.lower():
+        #     return "I don't know"
+        # if len(answer.strip()) == 0:
+        #     return "I don't know"
 
         return answer
 
