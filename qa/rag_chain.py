@@ -10,14 +10,13 @@ system_prompt = "You are a helpful assistant that answers questions based on the
                 "If the context does not contain the answer, say 'I don't know'. " \
                 "If the context is not relevant, say 'This is not relevant to the question'. " \
                 "Always provide a concise answer with no extra information." \
-                "If the question is not clear, ask for clarification." \
-                "Answer with the same language as the question, if the language is not supported,say 'this language is not supported' and answer in English."\
-                
+                "If the question is not clear, ask for clarification." 
+                                
 prompt_template = PromptTemplate.from_template(
         """
 {system_prompt}
 
-Use the following context to answer the question.
+You must use only the following context to answer the question. keep your answers straight to the point and concise. Don't add any extra information or explanations. "Answer with the same language as the question, if the language is not supported,say 'this language is not supported' and answer in English."
 
 Context:
 {context}
@@ -28,6 +27,7 @@ Question:
 Answer:
 """.strip()
 )
+
 
 CHROMA_DB_DIR = "chroma_db"
 

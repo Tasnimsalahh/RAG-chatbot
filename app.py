@@ -29,59 +29,50 @@
 # # Launch the interface
 # if __name__ == "__main__":
 #     iface.launch(share=True)
+
 import gradio as gr
 from qa.rag_chain import build_qa_chain
 
-# Build the RAG chain
+# Build the RAG RetrievalQA chain
 qa_chain = build_qa_chain()
 
-# Static context to be used for every question (could be dynamic too)
-CONTEXT = """
-Iranian attack, along with the promise of a response, aims to restore a 
-semblance of stability within Israel amidst internal turmoil.
-Potential Scenarios in the Wake of the Iranian Attack
-The unprecedented Iranian attack on targets within Israel has undoubt­edly 
-established new parameters for engagement between the two adversaries, 
-potentially reshaping future confrontations. The repercussions of this attack 
-may unfold into various scenarios, influenced by...
-"""
-
-# Response logic with enforced behavior
+# Define the response logic
 def respond(message, history):
-    # Optional: Detect language (you can improve this with langdetect)
+    # Optional: Detect Arabic (for multilingual support)
     lang = "ar" if any("\u0600" <= c <= "\u06FF" for c in message) else "en"
 
     try:
-        # Inject query and context
-        response = qa_chain.invoke({
-            "query": message,
-            "context": CONTEXT
-        })
-
+        # Query the RAG chain — context is retrieved automatically from vectorstore
+        response = qa_chain.invoke({"query": message})
         answer = response.get("result", "").strip()
 
-        # Post-processing rules
-        if "not found" in answer.lower():
-            return "I don't know"
+        # Debugging: Uncomment to view retrieved context
+        for i, doc in enumerate(response.get("source_documents", [])):
+            print(f"\nDocument {i+1}:\n", doc.page_content[:300])
+
+        # Post-processing logic
         if "not relevant" in answer.lower():
             return "This is not relevant to the question"
+        if "don't know" in answer.lower():
+            return "I don't know"
         if len(answer.strip()) == 0:
             return "I don't know"
 
         return answer
 
-    except Exception:
+    except Exception as e:
+        print("Error:", str(e))
         return "Sorry, an error occurred."
 
-# Build the Gradio chatbot interface
+# Gradio chat interface
 chatbot_ui = gr.ChatInterface(
     fn=respond,
     title="📘 RAG Legal Assistant",
-    description="Ask your question and get a brief answer based on the provided context.",
+    description="Ask your question and get a concise answer based on your documents.",
     chatbot=gr.Chatbot(),
     textbox=gr.Textbox(placeholder="Ask your question...", container=False),
 )
 
-# Run the app
+# Launch the Gradio app
 if __name__ == "__main__":
     chatbot_ui.launch(share=True)
