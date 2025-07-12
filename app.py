@@ -46,7 +46,10 @@ def respond(message, history):
         response = qa_chain.invoke({"query": message})
         answer = response.get("result", "").strip()
 
-        # Debugging: Uncomment to view retrieved context
+        # Debugging:
+        print("Question:", message)
+        print("Answer:", answer)
+        print("\nRetrieved Context:")
         for i, doc in enumerate(response.get("source_documents", [])):
             print(f"\nDocument {i+1}:\n", doc.page_content[:300])
 
