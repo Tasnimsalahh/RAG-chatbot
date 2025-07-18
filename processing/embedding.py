@@ -15,17 +15,61 @@ embedding_function = HuggingFaceEmbeddings(
     model_name="Qwen/Qwen3-Embedding-0.6B",
     model_kwargs={"device": "cuda"} if torch.cuda.is_available() else {"device": "cpu"}
 )
+# def embed_from_json(json_path: str):
+#     with open(json_path, "r", encoding="utf-8") as f:
+#         sections = json.load(f)
+
+#     documents = [
+#         Document(
+#             page_content=section["content"],
+#             metadata={"title": section["title"], "keywords": section.get("keywords", [])}
+#         )
+#         for section in sections
+#     ]
+#     if os.path.exists(CHROMA_DB_DIR):
+#         import shutil
+#         shutil.rmtree(CHROMA_DB_DIR)
+
+#     vectorstore = Chroma.from_documents(
+#         documents=documents,
+#         embedding=embedding_function,
+#         persist_directory=CHROMA_DB_DIR
+#     )
+#     vectorstore.persist()
+#     print(f"✅ Embedded and stored {len(documents)} sections in ChromaDB.")
+
 def embed_from_json(json_path: str):
     with open(json_path, "r", encoding="utf-8") as f:
-        sections = json.load(f)
+        data = json.load(f)
 
-    documents = [
-        Document(
-            page_content=section["content"],
-            metadata={"title": section["title"], "keywords": section.get("keywords", [])}
-        )
-        for section in sections
-    ]
+    documents = []
+
+    # Each entry in the JSON is a file with a 'sections' list
+    for file_entry in data:
+        filename = file_entry.get("filename", "unknown")
+        sections = file_entry.get("sections", [])
+
+        for section in sections:
+            content = section.get("content")
+            if not content:
+                print(f"⚠️ Skipping section without content in {filename}")
+                continue
+
+            documents.append(
+                Document(
+                    page_content=content,
+                    metadata={
+                        "title": section.get("title", ""),
+                        "keywords": section.get("keywords", []),
+                        "source": filename
+                    }
+                )
+            )
+
+    if not documents:
+        raise ValueError("No valid sections with content found in the JSON.")
+
+    # Optional: clear existing Chroma DB
     if os.path.exists(CHROMA_DB_DIR):
         import shutil
         shutil.rmtree(CHROMA_DB_DIR)
@@ -36,9 +80,7 @@ def embed_from_json(json_path: str):
         persist_directory=CHROMA_DB_DIR
     )
     vectorstore.persist()
-    print(f"✅ Embedded and stored {len(documents)} sections in ChromaDB.")
-
-
+    print(f"✅ Embedded and stored {len(documents)} sections from {len(data)} files into ChromaDB.")
 
 def embed_text(file_path):
     chunks = chunk_text(file_path, chunk_size=500, chunk_overlap=200)
