@@ -40,7 +40,7 @@ def embed_from_json(json_path: str, embedding_function=None):
             }
 
             # Filter unsupported metadata types
-            filtered_metadata = filter_complex_metadata(Document(page_content="", metadata=raw_metadata))
+            filtered_metadata = filter_complex_metadata(raw_metadata)
 
             # Add Document
             documents.append(
