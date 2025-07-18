@@ -19,7 +19,8 @@ prompt_template = PromptTemplate.from_template(
 You must use only the following context to answer the question. keep your answers straight to the point and concise. Don't add any extra information or explanations.\
     Answer with the same language as the question, if the language is not supported,say 'this language is not supported' and answer in English.\
     don't use any other language than the one used in the question.\
-    اذا جاء السؤال باللغة العربية, اجب باللغة العربية. اذا لم يكن لديك اجابة باللغة العربية, قل 'هذه اللغة غير مدعومة' و اجب باللغة الانجليزية.
+    اذا جاء السؤال باللغة العربية, اجب باللغة العربية. اذا جاء السؤال باللغة الانجليزية, اجب باللغة الانجليزية.\
+    اذا جاء السؤال بلغة غير العربية او الانجليزية, قل 'هذه اللغة غير مدعومة' و اجب باللغة الانجليزية.
 
 Context:
 {context}
@@ -30,6 +31,31 @@ Question:
 Answer:
 """.strip()
 )
+def handle_greetings_and_thanks(self, question: str) -> str | None:
+        greetings_arabic = [
+            "مرحبا", "مرحباً", "أهلاً","اهلاً","اهلا","أهلا", "السلام عليكم", "السّلام عليكم", "أهلاً وسهلاً", "أهلا وسهلا",
+            "صباح الخير", "صَباحُ الخَيْر", "مساء الخير", "مَساءُ الخَيْر", "تحية طيبة", "تحيّة طيّبة", 
+            "حيّاك الله", "حيّاكم الله", "سلام عليكم", "سلامٌ عليكم"
+        ]
+
+        thanks_arabic = [
+            "شكرا", "شكرًا", "أشكرك", "أَشكُرُك","شكرا", "جزاك الله خيرا", "جزاكَ اللهُ خيرًا", "جزاكي الله خيرا",
+            "جزاكم الله خيرا", "ممتن", "مُمتن", "ممتنة", "مُمتنّة", "شكرًا جزيلاً", "شكرا جزيلا", 
+            "كل الشكر", "ألف شكر", "شكرًا لك", "بارك الله فيك", "بارك الله فيكم"
+        ]
+        greetings_english = ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening"]
+        thanks_english = ["thank you", "thanks", "appreciate it", "much appreciated", "grateful", "thank you very much"]
+
+        stripped_question = question.strip().lower()
+        if any(greet in stripped_question for greet in greetings_arabic):
+            return "مرحبًا بك! كيف يمكنني مساعدتك اليوم؟"
+        elif any(thank in stripped_question for thank in thanks_arabic):
+            return "على الرحب والسعة! لا تتردد في طرح أي سؤال آخر."
+        elif any(greet in stripped_question for greet in greetings_english):
+            return "Hello! How can I assist you today?"
+        elif any(thank in stripped_question for thank in thanks_english):
+            return "You're welcome! Feel free to ask any other questions."
+        return None
 
 
 CHROMA_DB_DIR = "chroma_db"

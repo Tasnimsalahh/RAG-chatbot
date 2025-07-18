@@ -1,48 +1,22 @@
-# from qa.rag_chain import build_qa_chain
-
-# qa_chain = build_qa_chain()
-# query = input("Ask me anything: ")
-# result = qa_chain.invoke({"question": query})
-# print(result)
-# ui/app.py
-
-# import gradio as gr
-# from qa.rag_chain import build_qa_chain
-
-# # Build the RetrievalQA chain
-# qa_chain = build_qa_chain()
-
-# # Define the chatbot function
-# def chatbot(query):
-#     result = qa_chain.invoke({"query": query})
-#     return result["result"]  # or result['answer'] depending on your output keys
-
-# # Create Gradio interface
-# iface = gr.Interface(
-#     fn=chatbot,
-#     inputs=gr.Textbox(lines=2, placeholder="Ask me anything..."),
-#     outputs=gr.Textbox(),
-#     title="📘 RAG Chatbot",
-#     description="Ask questions and get answers based on document context."
-# )
-
-# # Launch the interface
-# if __name__ == "__main__":
-#     iface.launch(share=True)
-
 import gradio as gr
-from qa.rag_chain import build_qa_chain
+from qa.rag_chain import build_qa_chain, handle_greetings_and_thanks
 
 # Build the RAG RetrievalQA chain
 qa_chain = build_qa_chain()
 
 # Define the response logic
 def respond(message, history):
-    # Optional: Detect Arabic (for multilingual support)
-    lang = "ar" if any("\u0600" <= c <= "\u06FF" for c in message) else "en"
+    greeting_thanks_response = handle_greetings_and_thanks(message)
+    if greeting_thanks_response:
+        return greeting_thanks_response
+    
+    # lang = "ar" if any("\u0600" <= c <= "\u06FF" for c in message) else "en"
+    # if lang == "ar":
+    #     system_prompt = "أنت مساعد قانوني ذكي. أجب على الأسئلة بناءً على السياق المقدم. إذا لم يكن لديك إجابة باللغة العربية، قل 'هذه اللغة غير مدعومة' وأجب باللغة الإنجليزية."
+    # else:
+    #     system_prompt = "You are a smart legal assistant. Answer questions based on the provided context. If you don't have an answer in Arabic, say 'this language is not supported' and answer in English."
 
     try:
-        # Query the RAG chain — context is retrieved automatically from vectorstore
         response = qa_chain.invoke({"query": message})
         answer = response.get("result", "").strip()
 
@@ -53,19 +27,20 @@ def respond(message, history):
         for i, doc in enumerate(response.get("source_documents", [])):
             print(f"\nDocument {i+1}:\n", doc.page_content[:300])
 
-        # # Post-processing logic
-        # if "not relevant" in answer.lower():
-        #     return "This is not relevant to the question"
-        # if "don't know" in answer.lower():
-        #     return "I don't know"
-        # if len(answer.strip()) == 0:
-        #     return "I don't know"
-        
-        # Extract the answer from the response
-        if "Answer:" in answer:
-            extracted_answer = answer.split("Answer:")[-1].strip() if "Answer:" in answer else answer
+        # Ensure answer matches language
+        lang = "ar" if any("\u0600" <= c <= "\u06FF" for c in message) else "en"
+        if lang == "ar" and not any("\u0600" <= c <= "\u06FF" for c in answer):
+            return "الإجابة غير متوفرة باللغة العربية، يرجى إعادة صياغة السؤال إن أمكن."
+        elif lang == "en" and any("\u0600" <= c <= "\u06FF" for c in answer):
+            return "The answer is not available in English. Please rephrase your question."
 
-        return extracted_answer
+        return answer
+
+        # # Extract the answer from the response
+        # if "Answer:" in answer:
+        #     extracted_answer = answer.split("Answer:")[-1].strip() if "Answer:" in answer else answer
+
+        # return extracted_answer
 
     except Exception as e:
         print("Error:", str(e))
