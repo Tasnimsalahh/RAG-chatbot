@@ -17,53 +17,45 @@ embedding_function = HuggingFaceEmbeddings(
     model_kwargs={"device": "cuda"} if torch.cuda.is_available() else {"device": "cpu"}
 )
 
-def embed_from_json(json_path: str, embedding_function=None):
-    # Load JSON data
+def embed_from_json(json_path: str):
+    from langchain_community.vectorstores.utils import filter_complex_metadata
+
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    documents = []
-
-    for file_entry in data:
-        filename = file_entry.get("filename", "unknown")
-        for section in file_entry.get("sections", []):
-            content = section.get("content")
-            if not content:
-                print(f"⚠️ Skipping section without content in {filename}")
-                continue
-
-            # Raw metadata
+    # Flatten out sections from all files
+    all_documents = []
+    for file_data in data:
+        for section in file_data["sections"]:
             raw_metadata = {
                 "title": section.get("title", ""),
-                "keywords": section.get("keywords", []),
-                "source": filename
+                # Join keywords list into a comma-separated string to avoid metadata errors
+                "keywords": ", ".join(section.get("keywords", []))
             }
 
-            # Filter unsupported metadata types
+            # Filter complex metadata to conform with Chroma's requirements
             filtered_metadata = filter_complex_metadata(raw_metadata)
 
-            # Add Document
-            documents.append(
+            all_documents.append(
                 Document(
-                    page_content=content,
+                    page_content=section["content"],
                     metadata=filtered_metadata
                 )
             )
 
-    # Clear old DB if exists
+    # Clean old DB if exists
     if os.path.exists(CHROMA_DB_DIR):
         import shutil
         shutil.rmtree(CHROMA_DB_DIR)
 
-    # Build and persist vector store
+    # Store in Chroma
     vectorstore = Chroma.from_documents(
-        documents=documents,
+        documents=all_documents,
         embedding=embedding_function,
         persist_directory=CHROMA_DB_DIR
     )
     vectorstore.persist()
-
-    print(f"✅ Embedded and stored {len(documents)} sections in ChromaDB.")
+    print(f"✅ Embedded and stored {len(all_documents)} sections in ChromaDB.")
 
 def embed_text(file_path):
     chunks = chunk_text(file_path, chunk_size=500, chunk_overlap=200)
