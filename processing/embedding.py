@@ -7,6 +7,7 @@ from processing.chunking import chunk_text
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores.utils import filter_complex_metadata
 
 CHROMA_DB_DIR = "chroma_db"
 JSON_FILE = "docs/processed_sections.json"
@@ -44,7 +45,6 @@ def embed_from_json(json_path: str):
 
     documents = []
 
-    # Each entry in the JSON is a file with a 'sections' list
     for file_entry in data:
         filename = file_entry.get("filename", "unknown")
         sections = file_entry.get("sections", [])
@@ -55,21 +55,25 @@ def embed_from_json(json_path: str):
                 print(f"⚠️ Skipping section without content in {filename}")
                 continue
 
+            # Convert keywords list to comma-separated string
+            keywords = section.get("keywords", [])
+            if isinstance(keywords, list):
+                keywords = ", ".join(keywords)
+
             documents.append(
                 Document(
                     page_content=content,
-                    metadata={
+                    metadata = filter_complex_metadata({
                         "title": section.get("title", ""),
                         "keywords": section.get("keywords", []),
-                        "source": filename
-                    }
+                        "source": filename,
+                    })
                 )
             )
 
     if not documents:
         raise ValueError("No valid sections with content found in the JSON.")
 
-    # Optional: clear existing Chroma DB
     if os.path.exists(CHROMA_DB_DIR):
         import shutil
         shutil.rmtree(CHROMA_DB_DIR)
@@ -81,6 +85,7 @@ def embed_from_json(json_path: str):
     )
     vectorstore.persist()
     print(f"✅ Embedded and stored {len(documents)} sections from {len(data)} files into ChromaDB.")
+
 
 def embed_text(file_path):
     chunks = chunk_text(file_path, chunk_size=500, chunk_overlap=200)
