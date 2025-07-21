@@ -11,7 +11,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.utils import filter_complex_metadata
 
 CHROMA_DB_DIR = "chroma_db"
-JSON_FILE = "docs/processed_sections.json"
+JSON_FILE = "docs/processed_document.json"
 
 embedding_function = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
