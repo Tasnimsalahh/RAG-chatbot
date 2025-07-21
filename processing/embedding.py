@@ -29,7 +29,6 @@ def embed_from_json(json_path: str):
             title = section.get("title", "Untitled")
             content = section.get("content", "").strip()
             keywords = section.get("keywords", [])
-            # ✅ convert keywords list to comma-separated string
             keywords_str = ", ".join(keywords) if isinstance(keywords, list) else str(keywords)
 
             doc = Document(

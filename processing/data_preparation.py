@@ -159,22 +159,6 @@ def filter_relevant_text(text_chunks):
             filtered.append(text)
     return filtered
 
-
-# def process_documents(documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-#     processed_docs = []
-#     for doc in documents:
-#         # Filter and clean each chunk
-#         filtered_content = filter_relevant_text(doc["text_chunks"])
-#         cleaned_chunks = [clean_text(chunk) for chunk in filtered_content]
-
-#         if cleaned_chunks:
-#             doc["cleaned_chunks"] = cleaned_chunks
-#             processed_docs.append(doc)
-
-#     return processed_docs
-
-
-
 if __name__ == "__main__":
 
     document = {"file_path": "docs/Iranian attack on Israel.pdf"}
@@ -183,8 +167,8 @@ if __name__ == "__main__":
     # Process the documents
     processed_docs = process_documents(preprocessed_docs)
 
-    # Save the processed documents to a JSON file
-    with open("docs/processed_sections.json", "w", encoding="utf-8") as f:
+    # Save the processed document to a JSON file
+    with open("docs/processed_document.json", "w", encoding="utf-8") as f:
         json.dump(processed_docs, f, ensure_ascii=False, indent=4)
-    print("Processed documents saved to 'processed_sections.json'")
+    print("Processed document saved to 'processed_document.json'")
     print("Processing complete.")
