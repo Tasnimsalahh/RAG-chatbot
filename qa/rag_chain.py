@@ -31,7 +31,7 @@ Question:
 Answer:
 """.strip()
 )
-def handle_greetings_and_thanks(self, question: str) -> str | None:
+def handle_greetings_and_thanks(question: str) -> str | None:
         greetings_arabic = [
             "مرحبا", "مرحباً", "أهلاً","اهلاً","اهلا","أهلا", "السلام عليكم", "السّلام عليكم", "أهلاً وسهلاً", "أهلا وسهلا",
             "صباح الخير", "صَباحُ الخَيْر", "مساء الخير", "مَساءُ الخَيْر", "تحية طيبة", "تحيّة طيّبة", 

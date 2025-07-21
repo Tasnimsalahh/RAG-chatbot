@@ -1,4 +1,5 @@
 import os
+import shutil
 os.environ["TRANSFORMERS_NO_TF"] = "1"
 
 import torch
@@ -13,49 +14,46 @@ CHROMA_DB_DIR = "chroma_db"
 JSON_FILE = "docs/processed_sections.json"
 
 embedding_function = HuggingFaceEmbeddings(
-    model_name="Qwen/Qwen3-Embedding-0.6B",
+    model_name="sentence-transformers/all-MiniLM-L6-v2",
     model_kwargs={"device": "cuda"} if torch.cuda.is_available() else {"device": "cpu"}
 )
 
 def embed_from_json(json_path: str):
-    from langchain_community.vectorstores.utils import filter_complex_metadata
-
     with open(json_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+        sections_data = json.load(f)
 
-    # Flatten out sections from all files
-    all_documents = []
-    for file_data in data:
-        for section in file_data["sections"]:
-            raw_metadata = {
-                "title": section.get("title", ""),
-                # Join keywords list into a comma-separated string to avoid metadata errors
-                "keywords": ", ".join(section.get("keywords", []))
-            }
+    documents = []
+    for item in sections_data:
+        filename = item.get("filename", "unknown")
+        for section in item.get("sections", []):
+            title = section.get("title", "Untitled")
+            content = section.get("content", "").strip()
+            keywords = section.get("keywords", [])
+            # ✅ convert keywords list to comma-separated string
+            keywords_str = ", ".join(keywords) if isinstance(keywords, list) else str(keywords)
 
-            # Filter complex metadata to conform with Chroma's requirements
-            filtered_metadata = filter_complex_metadata(raw_metadata)
-
-            all_documents.append(
-                Document(
-                    page_content=section["content"],
-                    metadata=filtered_metadata
-                )
+            doc = Document(
+                page_content=content,
+                metadata={
+                    "title": title,
+                    "filename": filename,
+                    "keywords": keywords_str
+                }
             )
+            documents.append(doc)
 
-    # Clean old DB if exists
+    # Clear existing DB if any
     if os.path.exists(CHROMA_DB_DIR):
-        import shutil
         shutil.rmtree(CHROMA_DB_DIR)
 
     # Store in Chroma
     vectorstore = Chroma.from_documents(
-        documents=all_documents,
+        documents=documents,
         embedding=embedding_function,
         persist_directory=CHROMA_DB_DIR
     )
     vectorstore.persist()
-    print(f"✅ Embedded and stored {len(all_documents)} sections in ChromaDB.")
+    print(f"✅ Embedded and stored {len(documents)} sections in ChromaDB.")
 
 def embed_text(file_path):
     chunks = chunk_text(file_path, chunk_size=500, chunk_overlap=200)
