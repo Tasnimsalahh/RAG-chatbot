@@ -82,7 +82,7 @@ def build_qa_chain():
         do_sample=True,
         top_k=50,
         top_p=0.95,
-        temperature=0.0,
+        temperature=0.5,
         repetition_penalty=1.2
     )
     llm = HuggingFacePipeline(pipeline=pipeline_instance)
