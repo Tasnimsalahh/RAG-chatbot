@@ -5,29 +5,6 @@ from langchain_community.llms import HuggingFacePipeline
 from langchain.prompts import PromptTemplate , ChatPromptTemplate
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-# system_prompt = (
-#     "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question.\n"
-#     "- If the context does not contain the answer, say: 'I don't know'.\n"
-#     "- If the question is not relevant to the context, say: 'This is not relevant to the question'.\n"
-#     "- Answer concisely. Do not provide explanations or extra information.\n"
-#     "- Do not generate any text not asked for.\n"
-#     "- Only use the language of the question (Arabic or English).\n"
-#     "- If the language is not supported, say: 'هذه اللغة غير مدعومة' and continue in English."
-# )
-
-# prompt_template = PromptTemplate.from_template(
-#     """
-# {system_prompt}
-
-# Context:
-# {context}
-
-# Question:
-# {question}
-
-# Answer:
-# """.strip()
-# )
 
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question. "
@@ -116,7 +93,7 @@ def build_qa_chain():
         retriever=retriever,
         return_source_documents=True,
         chain_type_kwargs={
-            "prompt": prompt_template.partial(system_prompt=system_prompt)
+            "prompt": prompt_template
         }
     )
 
