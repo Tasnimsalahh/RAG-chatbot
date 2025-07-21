@@ -6,21 +6,19 @@ from langchain.prompts import PromptTemplate
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-system_prompt = "You are a helpful assistant that answers questions based on the provided context and the language of the query. " \
-                "If the context does not contain the answer, say 'I don't know'. " \
-                "If the context is not relevant, say 'This is not relevant to the question'. " \
-                "Always provide a concise answer with no extra information." \
-                "If the question is not clear, ask for clarification." \
+system_prompt = (
+    "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question.\n"
+    "- If the context does not contain the answer, say: 'I don't know'.\n"
+    "- If the question is not relevant to the context, say: 'This is not relevant to the question'.\n"
+    "- Answer concisely. Do not provide explanations or extra information.\n"
+    "- Do not generate any text not asked for.\n"
+    "- Only use the language of the question (Arabic or English).\n"
+    "- If the language is not supported, say: 'هذه اللغة غير مدعومة' and continue in English."
+)
 
 prompt_template = PromptTemplate.from_template(
-        """
+    """
 {system_prompt}
-
-You must use only the following context to answer the question. keep your answers straight to the point and concise. Don't add any extra information or explanations.\
-    Answer with the same language as the question, if the language is not supported,say 'this language is not supported' and answer in English.\
-    don't use any other language than the one used in the question.\
-    اذا جاء السؤال باللغة العربية, اجب باللغة العربية. اذا جاء السؤال باللغة الانجليزية, اجب باللغة الانجليزية.\
-    اذا جاء السؤال بلغة غير العربية او الانجليزية, قل 'هذه اللغة غير مدعومة' و اجب باللغة الانجليزية.
 
 Context:
 {context}
@@ -31,6 +29,7 @@ Question:
 Answer:
 """.strip()
 )
+
 def handle_greetings_and_thanks(question: str) -> str | None:
         greetings_arabic = [
             "مرحبا", "مرحباً", "أهلاً","اهلاً","اهلا","أهلا", "السلام عليكم", "السّلام عليكم", "أهلاً وسهلاً", "أهلا وسهلا",
