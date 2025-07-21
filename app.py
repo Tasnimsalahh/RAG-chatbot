@@ -9,32 +9,32 @@ def respond(message, history):
     greeting_thanks_response = handle_greetings_and_thanks(message)
     if greeting_thanks_response:
         return greeting_thanks_response
+
     try:
         response = qa_chain.invoke({"query": message})
         answer = response.get("result", "").strip()
 
-        # Debugging:
+        # Debugging output
         print("Question:", message)
         print("Answer:", answer)
         print("\nRetrieved Context:")
         for i, doc in enumerate(response.get("source_documents", [])):
             print(f"\nDocument {i+1}:\n", doc.page_content[:300])
 
-        # Ensure answer matches language
-        lang = "ar" if any("\u0600" <= c <= "\u06FF" for c in message) else "en"
-        if lang == "ar" and not any("\u0600" <= c <= "\u06FF" for c in answer):
-            return "الإجابة غير متوفرة باللغة العربية، يرجى إعادة صياغة السؤال إن أمكن."
-        elif lang == "en" and any("\u0600" <= c <= "\u06FF" for c in answer):
-            return "The answer is not available in English. Please rephrase your question."
+        # Language check (majority detection instead of any char)
+        def detect_lang(text):
+            arabic_chars = sum("\u0600" <= c <= "\u06FF" for c in text)
+            return "ar" if arabic_chars / max(len(text), 1) > 0.5 else "en"
 
+        message_lang = detect_lang(message)
+        answer_lang = detect_lang(answer)
+
+        if message_lang != answer_lang:
+            if message_lang == "ar":
+                return "الإجابة غير متوفرة باللغة العربية، يرجى إعادة صياغة السؤال إن أمكن."
+            else:
+                return "The answer is not available in English. Please rephrase your question."
         return answer
-
-        # # Extract the answer from the response
-        # if "Answer:" in answer:
-        #     extracted_answer = answer.split("Answer:")[-1].strip() if "Answer:" in answer else answer
-
-        # return extracted_answer
-
     except Exception as e:
         print("Error:", str(e))
         return "Sorry, an error occurred."
