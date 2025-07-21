@@ -2,23 +2,43 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_community.llms import HuggingFacePipeline
-from langchain.prompts import PromptTemplate
-
+from langchain.prompts import PromptTemplate , ChatPromptTemplate
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-system_prompt = (
-    "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question.\n"
-    "- If the context does not contain the answer, say: 'I don't know'.\n"
-    "- If the question is not relevant to the context, say: 'This is not relevant to the question'.\n"
-    "- Answer concisely. Do not provide explanations or extra information.\n"
-    "- Do not generate any text not asked for.\n"
-    "- Only use the language of the question (Arabic or English).\n"
-    "- If the language is not supported, say: 'هذه اللغة غير مدعومة' and continue in English."
-)
+# system_prompt = (
+#     "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question.\n"
+#     "- If the context does not contain the answer, say: 'I don't know'.\n"
+#     "- If the question is not relevant to the context, say: 'This is not relevant to the question'.\n"
+#     "- Answer concisely. Do not provide explanations or extra information.\n"
+#     "- Do not generate any text not asked for.\n"
+#     "- Only use the language of the question (Arabic or English).\n"
+#     "- If the language is not supported, say: 'هذه اللغة غير مدعومة' and continue in English."
+# )
 
-prompt_template = PromptTemplate.from_template(
-    """
-{system_prompt}
+# prompt_template = PromptTemplate.from_template(
+#     """
+# {system_prompt}
+
+# Context:
+# {context}
+
+# Question:
+# {question}
+
+# Answer:
+# """.strip()
+# )
+
+prompt_template = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question. "
+               "If the context does not contain the answer, say: 'I don't know'. "
+               "If the question is not relevant to the context, say: 'This is not relevant to the question'. "
+               "Answer concisely. Do not provide explanations or extra information. "
+               "Only use the language of the question (Arabic or English). "
+               "If the language is not supported, say: 'هذه اللغة غير مدعومة' and continue in English."),
+    ("human", """You must use only the following context to answer the question. 
+Answer with the same language as the question.
+Don't add any extra information.
 
 Context:
 {context}
@@ -26,9 +46,8 @@ Context:
 Question:
 {question}
 
-Answer:
-""".strip()
-)
+Answer:""")
+])
 
 def handle_greetings_and_thanks(question: str) -> str | None:
         greetings_arabic = [
@@ -82,11 +101,11 @@ def build_qa_chain():
         "text-generation",
         model=model,
         tokenizer=tokenizer,
-        max_new_tokens=512,
+        max_new_tokens=256,
         do_sample=True,
         top_k=50,
         top_p=0.95,
-        temperature=0.7,
+        temperature=0.0,
         repetition_penalty=1.2
     )
     llm = HuggingFacePipeline(pipeline=pipeline_instance)
