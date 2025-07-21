@@ -63,7 +63,7 @@ CHROMA_DB_DIR = "chroma_db"
 def build_qa_chain():
     # Load the vectorstore
     embedding_function = HuggingFaceEmbeddings(
-        model_name="Qwen/Qwen3-Embedding-0.6B",
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
         model_kwargs={"device": "cuda"}
     )
     vectorstore = Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embedding_function)
