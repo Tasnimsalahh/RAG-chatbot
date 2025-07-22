@@ -1,8 +1,20 @@
 import json
 import re
 from typing import List, Dict, Any
-from processing.chunking import chunk_text
 from loaders.pdf_loaders import extract_text_from_pdf
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+def chunk_text(pages, chunk_size=800, chunk_overlap=100):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        separators=["\n\n", "\n", ".", " ", ""]
+    )
+    all_chunks = []
+    for page in pages:
+        chunks = text_splitter.split_text(page)
+        all_chunks.extend(chunks)
+    return all_chunks
 
 def preprocess_documents(documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for doc in documents:
@@ -18,7 +30,6 @@ def preprocess_documents(documents: List[Dict[str, Any]]) -> List[Dict[str, Any]
 def group_chunks_by_section(chunks: List[str], section_patterns: List[Dict]) -> List[Dict]:
     sections = []
     current_section = None
-
     for chunk in chunks:
         matched = False
         for pattern in section_patterns:

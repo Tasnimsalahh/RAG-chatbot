@@ -1,14 +1,12 @@
 import os
 import shutil
-os.environ["TRANSFORMERS_NO_TF"] = "1"
-
 import torch
 import json
-from processing.chunking import chunk_text
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores.utils import filter_complex_metadata
+
+os.environ["TRANSFORMERS_NO_TF"] = "1"
 
 CHROMA_DB_DIR = "chroma_db"
 JSON_FILE = "docs/processed_document.json"

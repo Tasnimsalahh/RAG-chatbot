@@ -59,7 +59,7 @@ def build_qa_chain():
     # Load the vectorstore
     embedding_function = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
-        model_kwargs={"device": "cuda"}
+        model_kwargs={"device": "cpu"}
     )
     vectorstore = Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embedding_function)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
@@ -68,6 +68,7 @@ def build_qa_chain():
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
+        load_in_4bit=True,
         torch_dtype="auto",
         device_map="auto",
         offload_folder="offload",
@@ -78,11 +79,11 @@ def build_qa_chain():
         "text-generation",
         model=model,
         tokenizer=tokenizer,
-        max_new_tokens=256,
+        max_new_tokens=128,
         do_sample=True,
         top_k=50,
-        top_p=0.95,
-        temperature=0.5,
+        top_p=0.9,
+        temperature=0.3,
         repetition_penalty=1.2
     )
     llm = HuggingFacePipeline(pipeline=pipeline_instance)
