@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 from loaders.pdf_loaders import extract_text_from_pdf
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-def chunk_text(pages, chunk_size=800, chunk_overlap=100):
+def chunk_text(pages, chunk_size=300, chunk_overlap=50):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
@@ -23,7 +23,7 @@ def preprocess_documents(documents: List[Dict[str, Any]]) -> List[Dict[str, Any]
         doc["content"] = pdf_text
 
         # Split text into chunks
-        text_chunks = chunk_text(pdf_text, chunk_size=500, chunk_overlap=200)
+        text_chunks = chunk_text(pdf_text, chunk_size=300, chunk_overlap=50)
         doc["text_chunks"] = text_chunks
     return documents
 

@@ -5,6 +5,7 @@ import json
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from processing.data_preparation import chunk_text
 
 os.environ["TRANSFORMERS_NO_TF"] = "1"
 
@@ -39,7 +40,6 @@ def embed_from_json(json_path: str):
             )
             documents.append(doc)
 
-    # Clear existing DB if any
     if os.path.exists(CHROMA_DB_DIR):
         shutil.rmtree(CHROMA_DB_DIR)
 

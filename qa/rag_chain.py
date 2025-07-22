@@ -2,9 +2,9 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_community.llms import HuggingFacePipeline
-from langchain.prompts import PromptTemplate , ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-
+from langchain.retrievers import BM25Retriever, EnsembleRetriever
 
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question. "
@@ -62,7 +62,14 @@ def build_qa_chain():
         model_kwargs={"device": "cpu"}
     )
     vectorstore = Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embedding_function)
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    
+    dense_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    bm25_retriever = BM25Retriever.from_documents(docs)
+    bm25_retriever.k = 5
+    retriever = EnsembleRetriever(
+        retrievers=[dense_retriever, bm25_retriever],
+        weights=[0.7, 0.3]
+    )
 
     model_name = "Qwen/Qwen2.5-3B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
