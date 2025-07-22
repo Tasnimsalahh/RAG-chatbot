@@ -6,6 +6,8 @@ from langchain.prompts import ChatPromptTemplate
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain.retrievers import BM25Retriever, EnsembleRetriever
 
+docs = "docs\processed_document.json"
+
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question. "
                "If the context does not contain the answer, say: 'I don't know'. "
