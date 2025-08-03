@@ -1,7 +1,7 @@
 import json 
 from qa.rag_chain import build_qa_chain
 
-with open("docs/iran_israel_qa.json", "r", encoding="utf-8") as f:
+with open("docs\\iran_israel_rag_qa.json", "r", encoding="utf-8") as f:
     qa_data = json.load(f)
 
 qa_pairs = qa_data["qa_pairs"]
