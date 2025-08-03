@@ -5,8 +5,11 @@ from langchain_community.llms import HuggingFacePipeline
 from langchain.prompts import ChatPromptTemplate
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain.retrievers import BM25Retriever, EnsembleRetriever
+from langchain.schema import Document
+from processing.data_preparation import chunk_text
 
-docs = "docs\processed_document.json"
+# docs = "docs\processed_document.json"
+docs = [Document(page_content=chunk) for chunk in chunk_text("docs/processed_document.json", chunk_size=300, chunk_overlap=50)]
 
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful assistant that answers questions based only on the provided context and in the same language as the question. "
